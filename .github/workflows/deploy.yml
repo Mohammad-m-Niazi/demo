@@ -16,70 +16,156 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # --------------------------------------------------
+      # Checkout
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --------------------------------------------------
+      # Node.js
+      # --------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
+      # --------------------------------------------------
+      # Install
+      # --------------------------------------------------
       - name: Install dependencies
         run: npm ci
 
+      # --------------------------------------------------
+      # Quality checks
+      # --------------------------------------------------
       - name: Check formatting
         run: npm run format:check
 
       - name: Run lint
         run: npm run lint
 
+      # --------------------------------------------------
+      # Build
+      # --------------------------------------------------
       - name: Build application
         run: npm run build
 
+      # --------------------------------------------------
+      # Configure SSH
+      # --------------------------------------------------
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTGATOR_SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
         run: |
+          set -e
+
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
 
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          ssh-keyscan -t rsa -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+          echo "Scanning SSH host key..."
+          ssh-keyscan -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+
           chmod 600 "$HOME/.ssh/known_hosts"
 
+      # --------------------------------------------------
+      # Diagnose network connectivity
+      # --------------------------------------------------
+      - name: Diagnose SSH connectivity
+        env:
+          SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "Testing TCP connection"
+          echo "========================================"
+
+          nc -vz -w 10 "$SSH_HOST" 2222
+
+          echo
+          echo "========================================"
+          echo "GitHub runner public IP"
+          echo "========================================"
+
+          curl -s https://api.ipify.org
+          echo
+
+      # --------------------------------------------------
+      # Verify SSH authentication
+      # --------------------------------------------------
       - name: Verify SSH connection
         env:
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
           SSH_USER: ${{ secrets.HOSTGATOR_SSH_USER }}
         run: |
-          ssh \
+          set -e
+
+          echo "========================================"
+          echo "Testing SSH authentication"
+          echo "========================================"
+
+          ssh -vvv \
+            -o ConnectTimeout=15 \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
             -p 2222 \
             -i "$HOME/.ssh/hostgator_deploy" \
             "$SSH_USER@$SSH_HOST" \
             "echo 'SSH connection successful'"
 
+      # --------------------------------------------------
+      # Deploy
+      # --------------------------------------------------
       - name: Deploy to HostGator
         env:
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
           SSH_USER: ${{ secrets.HOSTGATOR_SSH_USER }}
           DEPLOY_PATH: /home3/mtcmfste/public_html/demo/
         run: |
+          set -e
+
+          echo "========================================"
+          echo "Validating build"
+          echo "========================================"
+
           test -d dist
           test -f dist/index.html
 
+          echo "Build directory:"
+          ls -la dist
+
+          echo
+          echo "========================================"
+          echo "Preparing remote directory"
+          echo "========================================"
+
           ssh \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
             -p 2222 \
             -i "$HOME/.ssh/hostgator_deploy" \
             "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH'"
 
+          echo
+          echo "========================================"
+          echo "Uploading files"
+          echo "========================================"
+
           rsync \
             -avz \
             --delete \
-            -e "ssh -p 2222 -i $HOME/.ssh/hostgator_deploy" \
+            -e "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -p 2222 -i $HOME/.ssh/hostgator_deploy" \
             dist/ \
             "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
+
+          echo
+          echo "========================================"
+          echo "Deployment completed successfully"
+          echo "========================================"
