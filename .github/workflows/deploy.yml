@@ -52,6 +52,26 @@ jobs:
         run: npm run build
 
       # --------------------------------------------------
+      # Temporarily Whitelist GitHub Runner IP in HostGator
+      # --------------------------------------------------
+      - name: Whitelist IP via cPanel API
+        id: firewall
+        env:
+          HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
+          TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+        run: |
+          set -e
+          RUNNER_IP=$(curl -s https://ipify.org)
+          echo "runner_ip=$RUNNER_IP" >> $GITHUB_OUTPUT
+          
+          echo "========================================"
+          echo "Whitelisting IP: $RUNNER_IP"
+          echo "========================================"
+          curl -s -H "Authorization: cpanel $TOKEN" \
+            "https://$HOST:2083/execute/Firewall/add_ip?ip=$RUNNER_IP&comment=GitHub-Actions-Deploy"
+          echo ""
+
+      # --------------------------------------------------
       # Configure SSH
       # --------------------------------------------------
       - name: Configure SSH
@@ -92,7 +112,7 @@ jobs:
           echo "GitHub runner public IP"
           echo "========================================"
 
-          curl -s https://api.ipify.org
+          curl -s https://ipify.org
           echo
 
       # --------------------------------------------------
@@ -157,6 +177,11 @@ jobs:
           echo "Uploading files"
           echo "========================================"
 
+          echo
+          echo "========================================"
+          echo "Uploading files"
+          echo "========================================"
+
           rsync \
             -avz \
             --delete \
@@ -168,3 +193,19 @@ jobs:
           echo "========================================"
           echo "Deployment completed successfully"
           echo "========================================"
+
+      # --------------------------------------------------
+      # Clean up Firewall Whitelist
+      # --------------------------------------------------
+      - name: Remove IP from Whitelist
+        if: always()
+        env:
+          HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
+          TOKEN: ${{ secrets.CPANEL_API_TOKEN }}
+        run: |
+          RUNNER_IP="${{ steps.firewall.outputs.runner_ip }}"
+          echo "========================================"
+          echo "Removing IP from whitelist: $RUNNER_IP"
+          echo "========================================"
+          curl -s -H "Authorization: cpanel $TOKEN" \
+            "https://$HOST:2083/execute/Firewall/remove_ip?ip=$RUNNER_IP"
