@@ -48,7 +48,7 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          ssh-keyscan -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+          ssh-keyscan -t rsa -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
 
       - name: Verify SSH connection
