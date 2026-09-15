@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 permissions:
@@ -48,7 +47,7 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          ssh-keyscan -t rsa -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+          ssh-keyscan -t rsa -p 2222 -- "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
 
       - name: Verify SSH connection
@@ -75,7 +74,7 @@ jobs:
             -p 2222 \
             -i "$HOME/.ssh/hostgator_deploy" \
             "$SSH_USER@$SSH_HOST" \
-            "mkdir -p '$DEPLOY_PATH'"
+            "mkdir -p \"$DEPLOY_PATH\""
 
           rsync \
             -avz \
