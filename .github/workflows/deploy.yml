@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -41,14 +42,25 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTGATOR_SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
 
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/hostgator_deploy
-          chmod 600 ~/.ssh/hostgator_deploy
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
+          chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          ssh-keyscan -p 2222 "$SSH_HOST" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+          ssh-keyscan -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Verify SSH connection
+        env:
+          SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
+          SSH_USER: ${{ secrets.HOSTGATOR_SSH_USER }}
+        run: |
+          ssh \
+            -p 2222 \
+            -i "$HOME/.ssh/hostgator_deploy" \
+            "$SSH_USER@$SSH_HOST" \
+            "echo 'SSH connection successful'"
 
       - name: Deploy to HostGator
         env:
@@ -61,13 +73,13 @@ jobs:
 
           ssh \
             -p 2222 \
-            -i ~/.ssh/hostgator_deploy \
+            -i "$HOME/.ssh/hostgator_deploy" \
             "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH'"
 
           rsync \
             -avz \
             --delete \
-            -e "ssh -p 2222 -i ~/.ssh/hostgator_deploy" \
+            -e "ssh -p 2222 -i $HOME/.ssh/hostgator_deploy" \
             dist/ \
             "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
