@@ -158,8 +158,22 @@
 /* Responsive */
 
 @media (max-width: 850px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
   .navbar-links {
-    display: none;
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+  }
+  .navbar-links a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 12px;
   }
 }
 
@@ -175,5 +189,18 @@
 
   .navbar-contact {
     padding: 10px 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .navbar-brand {
+    gap: 8px;
+  }
+  .navbar-name strong {
+    font-size: 12px;
+  }
+  .navbar-contact {
+    width: 100%;
+    min-height: 44px;
   }
 }

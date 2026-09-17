@@ -12,10 +12,8 @@ function Navbar() {
         </div>
       </div>
 
-      <nav className="navbar-links">
-        <a className="active" href="#home">
-          Home
-        </a>
+      <nav className="navbar-links" aria-label="Main navigation">
+        <a href="#home">Home</a>
         <a href="#about">About</a>
         <a href="#services">Services</a>
         <a href="#work">Work</a>

@@ -6,20 +6,32 @@ import About from './components/About/About'
 import Projects from './components/Projects/Projects'
 import Skills from './components/Skills/Skills'
 import Services from './components/Services/Services'
+import Process from './components/Process/Process'
+import Contact from './components/Contact/Contact'
+import Footer from './components/Footer/Footer'
+
 function App() {
   return (
-    <main className="portfolio" style={{ '--portfolio-background': `url(${backgroundImage})` }}>
+    <div className="portfolio" style={{ '--portfolio-background': `url(${backgroundImage})` }}>
       <div className="portfolio-container">
         <div className="page-shell">
+          <a className="skip-link" href="#main-content">
+            Skip to content
+          </a>
           <Navbar />
-          <Hero />
-          <About />
-          <Services />
-          <Projects />
-          <Skills />
+          <main id="main-content" tabIndex={-1}>
+            <Hero />
+            <About />
+            <Services />
+            <Projects />
+            <Skills />
+            <Process />
+            <Contact />
+          </main>
+          <Footer />
         </div>
       </div>
-    </main>
+    </div>
   )
 }
 

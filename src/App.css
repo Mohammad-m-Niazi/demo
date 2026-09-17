@@ -59,3 +59,13 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+
+@media (max-width: 520px) {
+  .portfolio-container {
+    width: calc(100% - 20px);
+    padding: 10px 0;
+  }
+  .page-shell {
+    padding: 8px;
+  }
+}

@@ -13,7 +13,7 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  min-width: 320px;
+  min-width: 0;
   min-height: 100%;
 }
 
@@ -49,4 +49,68 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid #704536;
+  outline-offset: 5px;
+}
+section[id] {
+  scroll-margin-top: 20px;
+}
+main,
+section,
+article {
+  min-width: 0;
+}
+h1,
+h2,
+h3 {
+  overflow-wrap: anywhere;
+}
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 24px;
+  z-index: 10;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #4a2c24;
+  color: #fff9f0;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+/* Cocoa keeps small text readable over the translucent cream surfaces. */
+.navbar-name span,
+.hero-description,
+.about-story p,
+.services-description,
+.service-content p,
+.projects-intro,
+.project-content p,
+.skill-info span,
+.hero-focus span {
+  opacity: 1;
+}
+.hero-eyebrow,
+.about-eyebrow,
+.services-eyebrow,
+.projects-eyebrow,
+.skills-eyebrow,
+.service-number,
+.project-number {
+  color: #704536;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
