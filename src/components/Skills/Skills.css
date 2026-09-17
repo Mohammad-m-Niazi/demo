@@ -1,0 +1,168 @@
+.skills {
+  margin-top: 14px;
+  padding: 70px 50px;
+
+  background: rgb(255 249 240 / 42%);
+
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 22px;
+
+  box-shadow:
+    0 15px 40px rgb(74 44 36 / 6%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Heading */
+
+.skills-heading {
+  max-width: 650px;
+  margin-bottom: 40px;
+}
+
+.skills-eyebrow {
+  margin: 0 0 12px;
+
+  color: #b87952;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.skills-heading h2 {
+  margin: 0;
+
+  color: #4a2c24;
+
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+}
+
+.skills-heading h2 span {
+  color: #b87952;
+}
+
+/* Skills grid */
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* Individual skill */
+
+.skill-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  min-height: 82px;
+  padding: 14px;
+
+  background: rgb(255 249 240 / 55%);
+
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 17px;
+
+  box-shadow:
+    0 8px 24px rgb(74 44 36 / 5%),
+    inset 0 1px 0 rgb(255 255 255 / 75%);
+
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+
+  background: rgb(255 249 240 / 78%);
+
+  box-shadow:
+    0 12px 28px rgb(74 44 36 / 9%),
+    inset 0 1px 0 rgb(255 255 255 / 85%);
+}
+
+/* Icon */
+
+.skill-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  background: rgb(242 226 206 / 75%);
+
+  border: 1px solid rgb(255 255 255 / 70%);
+  border-radius: 13px;
+
+  color: #b87952;
+}
+
+.skill-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Skill information */
+
+.skill-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  min-width: 0;
+}
+
+.skill-info strong {
+  color: #4a2c24;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.skill-info span {
+  color: #704536;
+
+  font-size: 9px;
+
+  opacity: 0.65;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 750px) {
+  .skills {
+    padding: 50px 30px;
+  }
+
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .skills {
+    padding: 40px 20px;
+  }
+
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+}
