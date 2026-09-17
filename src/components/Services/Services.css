@@ -1,0 +1,223 @@
+.services {
+  margin-top: 14px;
+  padding: 70px 50px;
+
+  background: rgb(255 249 240 / 42%);
+
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 22px;
+
+  box-shadow:
+    0 15px 40px rgb(74 44 36 / 6%),
+    inset 0 1px 0 rgb(255 255 255 / 70%);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Heading */
+
+.services-heading {
+  max-width: 700px;
+  margin-bottom: 42px;
+}
+
+.services-eyebrow {
+  margin: 0 0 12px;
+
+  color: #b87952;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.services-heading h2 {
+  margin: 0;
+
+  color: #4a2c24;
+
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+}
+
+.services-heading h2 span {
+  color: #b87952;
+}
+
+.services-description {
+  max-width: 600px;
+  margin: 18px 0 0;
+
+  color: #704536;
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  opacity: 0.75;
+}
+
+/* Cards */
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 340px;
+  padding: 24px;
+
+  background: rgb(255 249 240 / 58%);
+
+  border: 1px solid rgb(255 255 255 / 72%);
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 30px rgb(74 44 36 / 6%),
+    inset 0 1px 0 rgb(255 255 255 / 80%);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+
+  background: rgb(255 249 240 / 78%);
+
+  box-shadow:
+    0 18px 35px rgb(74 44 36 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 90%);
+}
+
+/* Number */
+
+.service-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  background: #f2e2ce;
+
+  border-radius: 13px;
+
+  color: #b87952;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Content */
+
+.service-content {
+  margin-top: 35px;
+}
+
+.service-content h3 {
+  margin: 0;
+
+  color: #4a2c24;
+
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.service-content p {
+  margin: 14px 0 0;
+
+  color: #704536;
+
+  font-size: 12px;
+  line-height: 1.7;
+
+  opacity: 0.75;
+}
+
+/* Skill tags */
+
+.service-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 20px;
+}
+
+.service-skills span {
+  padding: 6px 10px;
+
+  background: rgb(242 226 206 / 65%);
+
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: 999px;
+
+  color: #704536;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* Link */
+
+.service-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  width: fit-content;
+
+  margin-top: auto;
+  padding-top: 25px;
+
+  color: #4a2c24;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.service-link > span {
+  font-size: 15px;
+
+  transition: transform 0.2s ease;
+}
+
+.service-link:hover > span {
+  transform: translate(3px, -3px);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-card {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 750px) {
+  .services {
+    padding: 50px 30px;
+  }
+}
+
+@media (max-width: 520px) {
+  .services {
+    padding: 40px 20px;
+  }
+}
