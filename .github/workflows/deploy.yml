@@ -4,39 +4,72 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: portfolio-production-deployment
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
+      # --------------------------------------------------
+      # Checkout
+      # --------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --------------------------------------------------
+      # Setup Node
+      # --------------------------------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
+      # --------------------------------------------------
+      # Install
+      # --------------------------------------------------
       - name: Install dependencies
         run: npm ci
 
+      # --------------------------------------------------
+      # Quality checks
+      # --------------------------------------------------
       - name: Check formatting
         run: npm run format:check
 
       - name: Run lint
         run: npm run lint
 
+      # --------------------------------------------------
+      # Build
+      # --------------------------------------------------
       - name: Build application
         run: npm run build
 
+      # --------------------------------------------------
+      # Validate build
+      # --------------------------------------------------
+      - name: Validate build
+        run: |
+          test -d dist
+          test -f dist/index.html
+
+          echo "Build completed successfully:"
+          ls -la dist
+
+      # --------------------------------------------------
+      # Configure SSH
+      # --------------------------------------------------
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTGATOR_SSH_PRIVATE_KEY }}
@@ -48,38 +81,55 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          ssh-keyscan -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
+          ssh-keyscan -H -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
 
-      - name: Verify SSH connection
-        env:
-          SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
-          SSH_USER: ${{ secrets.HOSTGATOR_SSH_USER }}
-        run: |
-          ssh \
-            -p 2222 \
-            -i "$HOME/.ssh/hostgator_deploy" \
-            "$SSH_USER@$SSH_HOST" \
-            "echo 'SSH connection successful'"
-
+      # --------------------------------------------------
+      # Deploy
+      # --------------------------------------------------
       - name: Deploy to HostGator
         env:
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
           SSH_USER: ${{ secrets.HOSTGATOR_SSH_USER }}
           DEPLOY_PATH: /home3/mtcmfste/public_html/demo/
         run: |
-          test -d dist
-          test -f dist/index.html
+          set -e
 
-          ssh \
-            -p 2222 \
-            -i "$HOME/.ssh/hostgator_deploy" \
-            "$SSH_USER@$SSH_HOST" \
-            "mkdir -p '$DEPLOY_PATH'"
+          echo "========================================"
+          echo "Deploying portfolio to HostGator"
+          echo "========================================"
 
-          rsync \
-            -avz \
-            --delete \
-            -e "ssh -p 2222 -i $HOME/.ssh/hostgator_deploy" \
-            dist/ \
-            "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
+          for attempt in 1 2 3; do
+            echo "Deployment attempt $attempt of 3"
+
+            if rsync \
+              -az \
+              --delete \
+              --exclude=".htaccess" \
+              -e "ssh \
+                -p 2222 \
+                -i $HOME/.ssh/hostgator_deploy \
+                -o BatchMode=yes \
+                -o StrictHostKeyChecking=yes \
+                -o ConnectTimeout=20 \
+                -o ServerAliveInterval=15 \
+                -o ServerAliveCountMax=3" \
+              dist/ \
+              "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"; then
+
+              echo
+              echo "========================================"
+              echo "Deployment successful"
+              echo "========================================"
+
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "Deployment failed. Retrying in 20 seconds..."
+              sleep 20
+            fi
+          done
+
+          echo "Deployment failed after 3 attempts."
+          exit 1
