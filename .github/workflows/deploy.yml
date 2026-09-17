@@ -75,9 +75,12 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTGATOR_SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.HOSTGATOR_SSH_HOST }}
         run: |
+          set -e
+
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
 
+          echo "Creating SSH private key..."
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
