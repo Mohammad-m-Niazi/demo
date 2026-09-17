@@ -5,6 +5,7 @@ import Hero from './components/Hero/Hero'
 import About from './components/About/About'
 import Projects from './components/Projects/Projects'
 import Skills from './components/Skills/Skills'
+import Services from './components/Services/Services'
 function App() {
   return (
     <main className="portfolio" style={{ '--portfolio-background': `url(${backgroundImage})` }}>
@@ -13,6 +14,7 @@ function App() {
           <Navbar />
           <Hero />
           <About />
+          <Services />
           <Projects />
           <Skills />
         </div>
