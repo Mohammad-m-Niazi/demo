@@ -85,7 +85,7 @@ function Skills() {
           return (
             <article className="skill-card" key={skill.name}>
               <div className="skill-icon">
-                <Icon />
+                <Icon aria-hidden="true" />
               </div>
 
               <div className="skill-info">

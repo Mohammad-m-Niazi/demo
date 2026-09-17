@@ -70,6 +70,7 @@ function Projects() {
 
             <a
               className="project-link"
+              aria-label={`View ${project.title} live demo (opens in a new tab)`}
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"

@@ -1,6 +1,6 @@
 .hero {
   display: grid;
-  grid-template-columns: 1fr 0.9fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
   align-items: center;
   gap: 50px;
 
@@ -137,6 +137,7 @@
 }
 
 .hero-visual-shape {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,5 +282,23 @@
 
   .hero-experience {
     right: -5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-title {
+    font-size: 36px;
+  }
+  .hero-role {
+    font-size: 24px;
+  }
+  .hero-actions > a {
+    width: 100%;
+  }
+  .hero-experience {
+    top: 0;
+  }
+  .hero-focus {
+    bottom: 0;
   }
 }
