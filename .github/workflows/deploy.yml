@@ -31,7 +31,7 @@ jobs:
           cache: npm
 
       # --------------------------------------------------
-      # Install
+      # Install dependencies
       # --------------------------------------------------
       - name: Install dependencies
         run: npm ci
@@ -64,13 +64,15 @@ jobs:
           mkdir -p "$HOME/.ssh"
           chmod 700 "$HOME/.ssh"
 
+          echo "Creating SSH private key..."
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/hostgator_deploy"
           chmod 600 "$HOME/.ssh/hostgator_deploy"
 
-          echo "Scanning SSH host key..."
+          echo "Scanning HostGator SSH host key..."
           ssh-keyscan -p 2222 "$SSH_HOST" >> "$HOME/.ssh/known_hosts"
-
           chmod 600 "$HOME/.ssh/known_hosts"
+
+          echo "SSH configuration completed."
 
       # --------------------------------------------------
       # Diagnose network connectivity
@@ -96,7 +98,7 @@ jobs:
           echo
 
       # --------------------------------------------------
-      # Verify SSH authentication
+      # Verify SSH authentication with retry
       # --------------------------------------------------
       - name: Verify SSH connection
         env:
@@ -109,14 +111,39 @@ jobs:
           echo "Testing SSH authentication"
           echo "========================================"
 
-          ssh -vvv \
-            -o ConnectTimeout=15 \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            -p 2222 \
-            -i "$HOME/.ssh/hostgator_deploy" \
-            "$SSH_USER@$SSH_HOST" \
-            "echo 'SSH connection successful'"
+          for attempt in 1 2 3 4 5; do
+            echo
+            echo "SSH attempt $attempt of 5"
+
+            if ssh \
+              -o ConnectTimeout=20 \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              -o ServerAliveInterval=10 \
+              -o ServerAliveCountMax=3 \
+              -p 2222 \
+              -i "$HOME/.ssh/hostgator_deploy" \
+              "$SSH_USER@$SSH_HOST" \
+              "echo 'SSH connection successful'"; then
+
+              echo "========================================"
+              echo "SSH authentication successful"
+              echo "========================================"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 5 ]; then
+              echo "SSH attempt failed."
+              echo "Waiting 20 seconds before trying again..."
+              sleep 20
+            fi
+          done
+
+          echo
+          echo "========================================"
+          echo "SSH failed after 5 attempts"
+          echo "========================================"
+          exit 1
 
       # --------------------------------------------------
       # Deploy
@@ -144,25 +171,71 @@ jobs:
           echo "Preparing remote directory"
           echo "========================================"
 
-          ssh \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            -p 2222 \
-            -i "$HOME/.ssh/hostgator_deploy" \
-            "$SSH_USER@$SSH_HOST" \
-            "mkdir -p \"$DEPLOY_PATH\""
+          REMOTE_READY=false
+
+          for attempt in 1 2 3 4 5; do
+            echo "SSH attempt $attempt of 5"
+
+            if ssh \
+              -o ConnectTimeout=20 \
+              -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes \
+              -o ServerAliveInterval=10 \
+              -o ServerAliveCountMax=3 \
+              -p 2222 \
+              -i "$HOME/.ssh/hostgator_deploy" \
+              "$SSH_USER@$SSH_HOST" \
+              "mkdir -p \"$DEPLOY_PATH\""; then
+
+              echo "Remote directory is ready."
+              REMOTE_READY=true
+              break
+            fi
+
+            if [ "$attempt" -lt 5 ]; then
+              echo "Connection failed."
+              echo "Waiting 20 seconds before retry..."
+              sleep 20
+            fi
+          done
+
+          if [ "$REMOTE_READY" != "true" ]; then
+            echo "Failed to prepare remote directory after 5 attempts."
+            exit 1
+          fi
 
           echo
           echo "========================================"
           echo "Uploading files"
           echo "========================================"
 
-          rsync \
-            -avz \
-            --delete \
-            -e "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -p 2222 -i $HOME/.ssh/hostgator_deploy" \
-            dist/ \
-            "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"
+          RSYNC_SUCCESS=false
+
+          for attempt in 1 2 3; do
+            echo "rsync attempt $attempt of 3"
+
+            if rsync \
+              -avz \
+              --delete \
+              -e "ssh -o ConnectTimeout=20 -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -p 2222 -i $HOME/.ssh/hostgator_deploy" \
+              dist/ \
+              "$SSH_USER@$SSH_HOST:$DEPLOY_PATH"; then
+
+              RSYNC_SUCCESS=true
+              break
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "Upload failed."
+              echo "Waiting 20 seconds before retry..."
+              sleep 20
+            fi
+          done
+
+          if [ "$RSYNC_SUCCESS" != "true" ]; then
+            echo "Deployment upload failed after 3 attempts."
+            exit 1
+          fi
 
           echo
           echo "========================================"
