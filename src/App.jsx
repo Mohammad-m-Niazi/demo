@@ -3,7 +3,7 @@ import backgroundImage from './assets/background_img.png'
 import Navbar from './components/Navbar/Navbar'
 import Hero from './components/Hero/Hero'
 import About from './components/About/About'
-
+import Projects from './components/Projects/Projects'
 function App() {
   return (
     <main className="portfolio" style={{ '--portfolio-background': `url(${backgroundImage})` }}>
@@ -12,6 +12,7 @@ function App() {
           <Navbar />
           <Hero />
           <About />
+          <Projects />
         </div>
       </div>
     </main>
